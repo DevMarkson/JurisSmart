@@ -40,8 +40,6 @@ const Chat = () => {
         { question: inputValue, response, citations },
       ]);
 
-      console.log(citations[0]);
-
       setInputValue(""); // Clear the input field after submission
       setCurrentIndex(history.length); // Set the index for the newly added question
     } catch (error) {
@@ -185,7 +183,7 @@ const Chat = () => {
               ref={textareaRef}
               value={inputValue}
               onChange={handleInputChange}
-              placeholder="Ask another question..."
+              placeholder="Ask question..."
               rows="1"
               className="animated-placeholder"
             />

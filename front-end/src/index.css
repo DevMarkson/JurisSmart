@@ -118,6 +118,7 @@ div.chat-box {
   background-color: white;
   border-radius: 50px;
   margin-right: auto;
+  overflow: hidden;
 }
 
 div.chat-box textarea {
@@ -125,10 +126,10 @@ div.chat-box textarea {
   padding: 10px;
   font-size: 18px;
   border: none;
-  border-radius: 10px;
   outline: none;
   resize: none; /* Disable resizing */
-  overflow-y: auto; /* Add vertical scrollbar if needed */
+  overflow-y: hidden; /* Add vertical scrollbar if needed */
+  overflow-x: hidden;
 }
 
 .icon {
@@ -193,6 +194,7 @@ p.error-message{
   animation: dots 1s steps(1, end) infinite;
   
 }
+
 
 @keyframes dots {
   0% {
@@ -319,6 +321,11 @@ div.container p {
   margin-top: 20px;
   margin-bottom: 20px;
   max-width: 450px;
+}
+
+div.citation a{
+  display: block;
+  margin-top: 10px;
 }
 
 }
