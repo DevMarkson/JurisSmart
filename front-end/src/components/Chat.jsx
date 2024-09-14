@@ -125,12 +125,13 @@ const Chat = () => {
                 className="question"
                 onClick={() =>
                   handlePredefinedQuestionClick(
-                    "What are the penalties for trademark infringement in the United Kingdom?"
+                    "What are the conditions for trademark renewal in the United Kingdom?"
                   )
                 }
               >
                 <p>
-                  What are the penalties for trademark infringement in the United Kingdom?
+                  What are the conditions for trademark renewal in the United
+                  Kingdom?
                 </p>
               </div>
             </div>
@@ -177,6 +178,14 @@ const Chat = () => {
               </div>
             </div>
           ))}
+          <div className="new-chat-button">
+            <button
+              className="new-chat-button"
+              onClick={() => window.location.reload()}
+            >
+              New Chat
+            </button>
+          </div>
 
           <div className="chat-box">
             <textarea
@@ -193,13 +202,6 @@ const Chat = () => {
           </div>
 
           {errorMessage && <p className="error-message">{errorMessage}</p>}
-
-          <button
-            className="new-chat-button"
-            onClick={() => window.location.reload()}
-          >
-            New Chat
-          </button>
         </div>
       )}
     </>
