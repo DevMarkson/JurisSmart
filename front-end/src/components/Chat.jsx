@@ -3,12 +3,15 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 import { ReactTyped } from "react-typed";
 
+import { GiInjustice } from "react-icons/gi";
+
 const Chat = () => {
   const [inputValue, setInputValue] = useState("");
   const [history, setHistory] = useState([]); // Track history of questions and responses
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false); // Track loading state
   const [currentIndex, setCurrentIndex] = useState(null); // Track the index of the current animated response
+  const [isResponseComplete, setIsResponseComplete] = useState(false); // Track if response is completed
   const textareaRef = useRef(null);
   const responseContainerRef = useRef(null);
 
@@ -20,6 +23,7 @@ const Chat = () => {
 
     setIsLoading(true); // Start loading animation
     setErrorMessage(""); // Clear previous errors
+    setIsResponseComplete(false); // Reset response completion state
     const requestData = { prompt: inputValue };
 
     try {
@@ -75,13 +79,13 @@ const Chat = () => {
     <>
       {history.length === 0 ? ( // Show the container only if there are no previous questions
         <div className="container">
+          <GiInjustice className="justice" />
           <h1>Get Clarity on Intellectual Property Law in Seconds!</h1>
           <p>
             Don't let legal complexity slow you down. Get clear, concise answers
             about IP law from trusted legal texts across Nigeria, the US, and
             the UK. Start asking questions or dive into common legal scenarios!
           </p>
-
           <div className="chat-box">
             <textarea
               ref={textareaRef}
@@ -95,9 +99,7 @@ const Chat = () => {
               {isLoading ? "Loading..." : "Enter"}
             </button>
           </div>
-
           {errorMessage && <p className="error-message">{errorMessage}</p>}
-
           <div className="faq">
             <p className="faq">Common Questions</p>
             <div className="questions">
@@ -105,31 +107,33 @@ const Chat = () => {
                 className="question"
                 onClick={() =>
                   handlePredefinedQuestionClick(
-                    "What is intellectual property?"
+                    "What is the duration of Copyright protection in the USA?"
                   )
                 }
               >
-                <p>What is intellectual property?</p>
+                <p>What is the duration of Copyright protection in the USA?</p>
               </div>
               <div
                 className="question"
                 onClick={() =>
                   handlePredefinedQuestionClick(
-                    "How can I protect a trademark?"
+                    "How do I register an Industrial act in Nigeria?"
                   )
                 }
               >
-                <p>How can I protect a trademark?</p>
+                <p>How do I register an Industrial act in Nigeria?</p>
               </div>
               <div
                 className="question"
                 onClick={() =>
                   handlePredefinedQuestionClick(
-                    "What are the steps to register a patent?"
+                    "What are the penalties for trademark infringement in the United Kingdom?"
                   )
                 }
               >
-                <p>What are the steps to register a patent?</p>
+                <p>
+                  What are the penalties for trademark infringement in the United Kingdom?
+                </p>
               </div>
             </div>
           </div>
@@ -143,6 +147,11 @@ const Chat = () => {
               </div>
 
               <div className="generating-response">
+                {index === currentIndex && !isResponseComplete && (
+                  <h3>
+                    Generating Response <span className="dot-animation"></span>
+                  </h3>
+                )}
                 <p>
                   {index === currentIndex ? ( // Animate only the current response
                     <ReactTyped
@@ -150,14 +159,20 @@ const Chat = () => {
                       typeSpeed={2} // Typing speed in milliseconds
                       backSpeed={0} // No backspace speed
                       showCursor={false} // Hide cursor after typing
+                      onComplete={() => setIsResponseComplete(true)} // Set completion state when typing finishes
                     />
                   ) : (
                     <span>{entry.response}</span>
                   )}
-                </p>  
+                </p>
 
                 <div className="citation">
-                  <a href={entry.citations[0].pdf_link} target="_blank" rel="noreferrer">
+                  <span>Citation:</span>
+                  <a
+                    href={entry.citations[0].pdf_link}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     1. {entry.citations[0].title}
                   </a>
                 </div>
@@ -180,6 +195,13 @@ const Chat = () => {
           </div>
 
           {errorMessage && <p className="error-message">{errorMessage}</p>}
+
+          <button
+            className="new-chat-button"
+            onClick={() => window.location.reload()}
+          >
+            New Chat
+          </button>
         </div>
       )}
     </>
