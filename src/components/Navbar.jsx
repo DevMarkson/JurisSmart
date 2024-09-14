@@ -1,6 +1,8 @@
 import { useState } from "react";
 import emailjs from "emailjs-com"; // Import EmailJS
 
+import { GiInjustice } from "react-icons/gi";
+
 const Navbar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -64,7 +66,13 @@ const Navbar = () => {
   return (
     <>
       <div className="navbar">
-        <h2 className="navbar-title">JurisSmart</h2>
+        <h2 className="navbar-title">
+          JurisSmart{" "}
+          <span>
+            {" "}
+            <GiInjustice className="justice2" />
+          </span>
+        </h2>
         <button onClick={openModal}>Send Feedback</button>
       </div>
 

@@ -50,10 +50,11 @@ div.container {
   max-width: 1400px;
   padding: 40px 0px;
   border-radius: 20px;
+  
 }
 
 div.container h1 {
-  font-size: 40px;
+  font-size: 38px;
   font-weight: bold;
   margin-top: 20px;
   margin-bottom: 20px;
@@ -70,22 +71,28 @@ div.container p {
 }
 
 div.questions {
-  display: flex;
+  display: inline-flex;
   justify-content: center;
   margin-top: 10px;
   gap: 20px;
   flex-wrap: wrap;
+  max-width: 1000px;
+
 }
 
 div.question {
   background-color: #070508;
   color: white;
-  padding: 20px;
+  padding: 10px;
   border-radius: 10px;
-  width: 400px;
+  width: 300px;
   text-align: center;
   cursor: pointer;
   transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
+}
+
+div.question p{
+  font-size: 15px;
 }
 
 div.question:hover {
@@ -105,7 +112,6 @@ p.faq {
 }
 
 
-
 div.chat-box {
   display: flex;
   justify-content: center;
@@ -118,6 +124,7 @@ div.chat-box {
   background-color: white;
   border-radius: 50px;
   margin-right: auto;
+  overflow: hidden;
 }
 
 div.chat-box textarea {
@@ -125,10 +132,10 @@ div.chat-box textarea {
   padding: 10px;
   font-size: 18px;
   border: none;
-  border-radius: 10px;
   outline: none;
   resize: none; /* Disable resizing */
-  overflow-y: auto; /* Add vertical scrollbar if needed */
+  overflow-y: hidden; /* Add vertical scrollbar if needed */
+  overflow-x: hidden;
 }
 
 .icon {
@@ -194,6 +201,7 @@ p.error-message{
   
 }
 
+
 @keyframes dots {
   0% {
     content: '.';
@@ -233,7 +241,9 @@ div.citation a:hover {
 .new-chat-button{
   margin-left: auto;
   margin-right: auto;
-  margin-top: 30px;
+  display: block;
+  margin-top: 40px;
+  margin-bottom: -30px;
   
 }
 
@@ -291,13 +301,7 @@ div.modal-buttons {
     font-size: 100px;
   color: #000000;
   margin-bottom: 20px;
-}
-
-
-.bot-icon{
-  font-size: 30px;
-  color: #000000;
-  margin-bottom: 20px;
+  text-align: center;
 }
 
 
@@ -318,7 +322,12 @@ div.container p {
   font-size: 18px;
   margin-top: 20px;
   margin-bottom: 20px;
-  max-width: 450px;
+  max-width: 520px;
+}
+
+div.citation a{
+  display: block;
+  margin-top: 10px;
 }
 
 }
