@@ -1,6 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 import { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
+import { marked } from "marked";
 import { ReactTyped } from "react-typed";
 
 import { GiInjustice } from "react-icons/gi";
@@ -73,6 +74,11 @@ const Chat = () => {
     setErrorMessage("");
   };
 
+  const convertMarkdownToHtml = (markdown) => {
+    const htmlOutput = marked(markdown);
+    return htmlOutput;
+  };
+
   return (
     <>
       {history.length === 0 ? ( // Show the container only if there are no previous questions
@@ -103,81 +109,102 @@ const Chat = () => {
             <div className="questions">
               <div
                 className="question"
-                onClick={() =>
+                onClick={() => {
                   handlePredefinedQuestionClick(
-                    "What is the duration of Copyright protection in the USA?"
-                  )
-                }
+                    "How do I register a trademark in USA?"
+                  );
+                }}
               >
-                <p>What is the duration of Copyright protection in the USA?</p>
+                <p>How do I register a trademark in USA</p>
               </div>
               <div
                 className="question"
-                onClick={() =>
+                onClick={() => {
                   handlePredefinedQuestionClick(
                     "How do I register an Industrial act in Nigeria?"
-                  )
-                }
+                  );
+                }}
               >
                 <p>How do I register an Industrial act in Nigeria?</p>
               </div>
               <div
                 className="question"
-                onClick={() =>
+                onClick={() => {
                   handlePredefinedQuestionClick(
-                    "What are the conditions for trademark renewal in the United Kingdom?"
-                  )
-                }
+                    "What is the duration of Copyright in the UK?"
+                  );
+                }}
               >
-                <p>
-                  What are the conditions for trademark renewal in the United
-                  Kingdom?
-                </p>
+                <p>What is the duration of Copyright in the UK</p>
               </div>
             </div>
           </div>
         </div>
       ) : (
         <div className="response-container" ref={responseContainerRef}>
-          {history.map((entry, index) => (
-            <div key={index} className="response-entry">
-              <div className="selected-question">
-                <p>{entry.question}</p>
-              </div>
+          {history.map((entry, index) => {
+            return (
+              <div key={index} className="response-entry">
+                <div className="selected-question">
+                  <p>{entry.question}</p>
+                </div>
 
-              <div className="generating-response">
-                {index === currentIndex && !isResponseComplete && (
-                  <h3>
-                    Generating Response <span className="dot-animation"></span>
-                  </h3>
-                )}
-                <p>
-                  {index === currentIndex ? ( // Animate only the current response
-                    <ReactTyped
-                      strings={[entry.response]} // The response text to type out
-                      typeSpeed={2} // Typing speed in milliseconds
-                      backSpeed={0} // No backspace speed
-                      showCursor={false} // Hide cursor after typing
-                      onComplete={() => setIsResponseComplete(true)} // Set completion state when typing finishes
-                    />
-                  ) : (
-                    <span>{entry.response}</span>
+                <div className="generating-response">
+                  {index === currentIndex && !isResponseComplete && (
+                    <h3>
+                      Generating Response{" "}
+                      <span className="dot-animation"></span>
+                    </h3>
                   )}
-                </p>
+                  <p>
+                    {index === currentIndex ? ( // Animate only the current response
+                      <ReactTyped
+                        strings={[convertMarkdownToHtml(entry.response)]} // The response text to type out
+                        typeSpeed={2} // Typing speed in milliseconds
+                        backSpeed={0} // No backspace speed
+                        showCursor={false} // Hide cursor after typing
+                        onComplete={() => setIsResponseComplete(true)} // Set completion state when typing finishes
+                      />
+                    ) : (
+                      <span>{entry.response}</span>
+                    )}
+                  </p>
 
-                <div className="citation">
-                  <span>Citation:</span>
-                  <a
-                    href={entry.citations[0].pdf_link}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    1. {entry.citations[0].title}
-                  </a>
+                  {entry.citations.length > 0 && (
+                    <>
+                      <h4 style={{ marginTop: "15px" }}>Citation:</h4>
+                      {entry.citations.map((citation, index) => {
+                        return (
+                          entry.response.includes(`[${index + 1}]`) && (
+                            <div className="citation" key={index}>
+                              <a
+                                href={citation.pdf_link}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                [{index + 1}]. {citation.title}
+                              </a>
+                            </div>
+                          )
+                        );
+                      })}
+                    </>
+                  )}
+
+                  {/* <div className="citation">
+                    <span>Citation:</span>
+                    <a
+                      href={entry.citations[0].pdf_link}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      1. {entry.citations[0].title}
+                    </a>
+                  </div> */}
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           <div className="new-chat-button">
             <button
               className="new-chat-button"
