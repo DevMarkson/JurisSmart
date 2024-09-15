@@ -11,10 +11,9 @@
 - [Deployment](#deployment)
 - [Technologies Used](#technnologies-used)
 - [Installation and Setup](#installation-and-setup)
-- [Usage](#usage)
 - [Technologies Used](#technologies-used)
-- [Contributing](#contributing)
-- [License](#license)
+- [API Endpoints](#api-endpoints)
+
 
 ## Introduction
 
@@ -114,6 +113,31 @@ To set up the app locally, you need:
    python app.py
    ```
 
-## ApiEndpoints
+## API Endpoints
 
-<!-- - **POST /generate**: Ask a legal question -->
+### Request body
+- **POST /generate**: Ask a legal question
+```
+   {
+   "prompt": "What are the copyright laws in Nigeria?",
+   "settings": {
+      "temperature": 0.5,
+      "max_tokens": 1000
+   },
+   "show_citations": true
+   }
+```
+
+### Response
+```
+{
+  "response": "Under Nigerian law, the Copyright Act protects various forms of expression...",
+  "citations": [
+    {
+      "number": 1,
+      "title": "CopyrightAct2023FinalPublication - Nigeria.pdf",
+      "pdf_link": "https://www.copyright.gov.ng/wp-content/uploads/2023/04/CopyrightAct2023FinalPublication1.pdf"
+    }
+  ]
+}
+```
