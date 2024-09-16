@@ -2,6 +2,8 @@
 
 **JurisSmart** is a web application designed to assist users in navigating complex legal matters, with a special emphasis on Intellectual Property law. Built using **React.js** for the frontend, **Flask** for the backend, the app leverages **Azure OpenAI** and **Azure Cognitive Search** to provide fast, accurate legal answers. The app retrieves relevant information from legal documents and trusted sources across **Nigeria**, the **USA**, and the **UK** and provides citation-backed answers, ensuring users receive reliable, authoritative responses.
 
+![Landing page of JurisSmart](./front-end/src/landing-image.png)
+
 ## Table of Contents
 
 - [Introduction](#introduction)
@@ -131,13 +133,36 @@ To set up the app locally, you need:
 ### Response
 ```
 {
-  "response": "Under Nigerian law, the Copyright Act protects various forms of expression...",
+  "response": "{
+  "citations": [
+    {
+      "number": 1,
+      "pdf_link": "No link available",
+      "title": "CopyrightAct2023FinalPublication -  Nigeira.pdf"
+    },
+    {
+      "number": 2,
+      "pdf_link": "https://iclg.com/practice-areas/copyright-laws-and-regulations/nigeria",
+      "title": "COP24_Chapter-11_Nigeria.pdf"
+    },
+    {
+      "number": 3,
+      "pdf_link": "No link available",
+      "title": "CopyRight Acts - USA.pdf"
+    }
+  ],
+  "response": "The copyright laws in Nigeria are primarily governed by the Copyright Act, 2022. Here are some key points from the Act:\n\n1. **Eligibility for Copyright**:\n   - Copyright is automatically conferred on any eligible work without the need for any formality [1].\n   - Works eligible for copyright include literary, musical, artistic works, audiovisuals, sound recordings, and broadcasts [1].\n   - The author must be a Nigerian citizen, habitually resident in Nigeria, or a body corporate incorporated under Nigerian laws [1].\n\n2. **Protection of Rights**:\n   - The Act aims to protect the rights of authors to ensure they receive just rewards and recognition for their intellectual efforts [1].\n   - It includes provisions to ensure compliance with international copyright treaties and conventions [1].\n\n3. **Ownership and Joint Ownership**:\n   - The author or creator of a work is generally considered the first owner of the copyright [2].\n   - Joint ownership is recognized, where multiple individuals share a joint interest in a copyright [2].\n\n4. **Transfer and Licensing**:\n   - Transfers or assignments of copyright must be in writing to be effective [2].\n   - Non-exclusive licenses can be written, oral, or inferred from conduct, but exclusive licenses must be in writing [2].\n\n5. **Collective Management**:\n   - There are collective management organizations for different types of works, such as the Audio Visual Rights Society of Nigeria (AVRS) for audiovisual works and Reproduction Rights Organization of Nigeria (REPRONIG) for literary works [2].\n\n6. **Miscellaneous Provisions**:\n   - The Act includes provisions for the establishment of a fund for the Nigerian Copyright Commission, financial management, annual reporting, and borrowing powers [1].\n   - It also outlines the powers of the Minister to give directives, indemnity clauses, and transitional provisions [1].\n\nThese points provide a general overview of the copyright laws in Nigeria as per the latest legislation. For a more detailed understanding, one can refer to the full text of the Copyright Act, 2022.",
   "citations": [
     {
       "number": 1,
       "title": "CopyrightAct2023FinalPublication - Nigeria.pdf",
       "pdf_link": "https://www.copyright.gov.ng/wp-content/uploads/2023/04/CopyrightAct2023FinalPublication1.pdf"
-    }
+    },
+    {
+      "number": 2,
+      "title": "COP24_Chapter-11_Nigeria.pdf",
+      "pdf_link": "https://iclg.com/practice-areas/copyright-laws-and-regulations/nigeria"
+    },
   ]
 }
 ```
