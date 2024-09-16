@@ -115,27 +115,27 @@ const Chat = () => {
                   );
                 }}
               >
-                <p>How do I register a trademark in USA</p>
+                <p>How do I register a trademark in USA?</p>
               </div>
               <div
                 className="question"
                 onClick={() => {
                   handlePredefinedQuestionClick(
-                    "How do I register an Industrial act in Nigeria?"
+                    "How do I register an Industrial design in Nigeria?"
                   );
                 }}
               >
-                <p>How do I register an Industrial act in Nigeria?</p>
+                <p>How do I register an Industrial design in Nigeria?</p>
               </div>
               <div
                 className="question"
                 onClick={() => {
                   handlePredefinedQuestionClick(
-                    "What is the duration of Copyright in the UK?"
+                    "What is the duration of Copyright in the United Kingdom?"
                   );
                 }}
               >
-                <p>What is the duration of Copyright in the UK</p>
+                <p>What is the duration of Copyright in the United Kingdom?</p>
               </div>
             </div>
           </div>
@@ -170,11 +170,12 @@ const Chat = () => {
                     )}
                   </p>
 
-                  {entry.citations.length > 0 && (
+                  {/* Only show citations if they exist */}
+                  {entry.citations && entry.citations.length > 0 && (
                     <>
                       <h4 style={{ marginTop: "15px" }}>Citation:</h4>
-                      {entry.citations.map((citation, index) => {
-                        return (
+                      {entry.citations.map(
+                        (citation, index) =>
                           entry.response.includes(`[${index + 1}]`) && (
                             <div className="citation" key={index}>
                               <a
@@ -186,21 +187,9 @@ const Chat = () => {
                               </a>
                             </div>
                           )
-                        );
-                      })}
+                      )}
                     </>
                   )}
-
-                  {/* <div className="citation">
-                    <span>Citation:</span>
-                    <a
-                      href={entry.citations[0].pdf_link}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      1. {entry.citations[0].title}
-                    </a>
-                  </div> */}
                 </div>
               </div>
             );
