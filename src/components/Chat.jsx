@@ -31,7 +31,7 @@ const Chat = () => {
       const {
         data: { response, citations },
       } = await axios.post(
-        "https://legal-advisor.onrender.com/generate",
+        "https://legal-advisor-6ru8.onrender.com/generate",
         requestData
       );
 
