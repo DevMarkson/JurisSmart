@@ -31,7 +31,7 @@ const Chat = () => {
       const {
         data: { response, citations },
       } = await axios.post(
-        "https://legal-advisor.onrender.com/generate",
+        "https://legal-advisor-6ru8.onrender.com/generate",
         requestData
       );
 
@@ -173,7 +173,7 @@ const Chat = () => {
                   {/* Only show citations if they exist */}
                   {entry.citations && entry.citations.length > 0 && (
                     <>
-                      <h4 style={{ marginTop: "15px" }}>Citation:</h4>
+                      <h4 style={{ marginTop: "15px" }}>References:</h4>
                       {entry.citations.map(
                         (citation, index) =>
                           entry.response.includes(`[${index + 1}]`) && (

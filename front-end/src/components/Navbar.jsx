@@ -36,8 +36,8 @@ const Navbar = () => {
     setIsSending(true);
 
     // Replace these with your EmailJS service, template, and user IDs
-    const serviceID = "service_w6v8837";
-    const templateID = "template_tvxgas8";
+    const serviceID = "service_7wx0mpp";
+    const templateID = "template_fmd0xbb";
     const userID = "vh2yeZ68MgfifADF7";
 
     const templateParams = {
