@@ -18,13 +18,42 @@ azure_search_endpoint = os.getenv("AZURE_SEARCH_ENDPOINT")
 azure_search_key = os.getenv("AZURE_SEARCH_KEY")
 azure_search_index = os.getenv("AZURE_SEARCH_INDEX")
 
-# Initialize the Azure OpenAI client
-client = AzureOpenAI(
-    base_url=f"{
-        azure_oai_endpoint}/openai/deployments/{azure_oai_deployment}/extensions",
-    api_key=azure_oai_key,
-    api_version="2023-09-01-preview"
-)
+# Client will be initialized when first needed
+client = None
+
+
+def get_azure_client():
+    global client
+    if client is None:
+        try:
+            # Try the newer initialization method first
+            client = AzureOpenAI(
+                azure_endpoint=azure_oai_endpoint,
+                api_key=azure_oai_key,
+                api_version="2023-12-01-preview"
+            )
+        except Exception as e:
+            print(f"Error with new method: {e}")
+            try:
+                # Fallback to older initialization method
+                client = AzureOpenAI(
+                    api_key=azure_oai_key,
+                    api_version="2023-12-01-preview",
+                    azure_endpoint=azure_oai_endpoint
+                )
+            except Exception as e2:
+                print(f"Error with fallback method: {e2}")
+                try:
+                    # Last resort - minimal parameters
+                    client = AzureOpenAI(
+                        api_key=azure_oai_key,
+                        azure_endpoint=azure_oai_endpoint
+                    )
+                except Exception as e3:
+                    print(f"All initialization methods failed: {e3}")
+                    raise e3
+    return client
+
 
 # PDF links for citations
 pdf_links_dict = {
@@ -44,7 +73,23 @@ pdf_links_dict = {
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return jsonify({
+        'status': 'JurisSmart Backend is running!',
+        'message': 'Legal AI API is ready to serve requests',
+        'endpoints': {
+            'generate': '/generate',
+            'health': '/health'
+        }
+    })
+
+
+@app.route('/health')
+def health_check():
+    return jsonify({
+        'status': 'healthy',
+        'timestamp': '2025-10-12',
+        'service': 'jurissmart-backend'
+    })
 
 
 @app.route('/generate', methods=['POST'])
@@ -56,20 +101,12 @@ def generate_response():
     show_citations = data.get('show_citations', True)
 
     # Configure your data source (IP law data stored in Azure Cognitive Search)
-    extension_config = dict(dataSources=[
-        {
-            "type": "AzureCognitiveSearch",
-            "parameters": {
-                "endpoint": azure_search_endpoint,
-                "key": azure_search_key,
-                "indexName": azure_search_index,
-            }
-        }
-    ])
-
     try:
+        # Get the client instance
+        azure_client = get_azure_client()
+
         # Send request to Azure OpenAI model
-        response = client.chat.completions.create(
+        response = azure_client.chat.completions.create(
             model=azure_oai_deployment,
             temperature=temperature,
             max_tokens=max_tokens,
@@ -77,52 +114,45 @@ def generate_response():
                 {"role": "system", "content": "You are a legal advisor specializing in Intellectual Property Law for Nigeria, the US, and the UK. Answer legal questions by retrieving relevant information from legal acts."},
                 {"role": "user", "content": prompt}
             ],
-            extra_body=extension_config
+            extra_body={
+                "data_sources": [{
+                    "type": "azure_search",
+                    "parameters": {
+                        "endpoint": azure_search_endpoint,
+                        "index_name": azure_search_index,
+                        "authentication": {
+                            "type": "api_key",
+                            "key": azure_search_key
+                        }
+                    }
+                }]
+            }
         )
 
         response_text = response.choices[0].message.content
-        pdf_links = []
+        final_citations = []
 
-        # Process citations if available
+        # Process citations if available (simplified for newer API)
         if show_citations:
             try:
-                citations = response.choices[0].message.context.get("messages", [])[
-                    0].get("content", None)
-                if citations:
-                    citation_json = json.loads(citations)
-                    citation_data = citation_json.get("citations", [])
-
-                    # Create a mapping of docX to titles
-                    doc_to_title_map = {}
-                    for i, citation in enumerate(citation_data, 1):
-                        title = citation.get(
-                            'title', 'No title available').strip()
-                        doc_to_title_map[f"doc{i}"] = title
-
-                    # Create a unique citations dictionary
-                    unique_citations = {}
-                    citation_count = 1
-
-                    for title in doc_to_title_map.values():
-                        if title not in unique_citations:
+                # Check if there are any citations in the response
+                if hasattr(response.choices[0].message, 'context') and response.choices[0].message.context:
+                    # Process citations from the new API format
+                    context_data = response.choices[0].message.context
+                    if isinstance(context_data, dict) and 'citations' in context_data:
+                        citations = context_data['citations']
+                        for i, citation in enumerate(citations, 1):
+                            title = citation.get('title', f'Document {i}')
                             pdf_link = pdf_links_dict.get(
                                 title, "No link available")
-                            unique_citations[title] = {
-                                'number': citation_count, 'title': title, 'pdf_link': pdf_link}
-                            citation_count += 1
-
-                    # Create the final list of unique citations
-                    final_citations = list(unique_citations.values())
-
-                    # Replace placeholders in the response text using the title-based mapping
-                    for doc_placeholder, title in doc_to_title_map.items():
-                        if title in unique_citations:
-                            citation_number = unique_citations[title]['number']
-                            response_text = response_text.replace(
-                                f"[{doc_placeholder}]", f"[{citation_number}]")
-
+                            final_citations.append({
+                                'number': i,
+                                'title': title,
+                                'pdf_link': pdf_link
+                            })
             except Exception as e:
                 print(f"An error occurred while processing citations: {e}")
+                # Continue without citations if there's an error
 
         # Check for "not found" message and handle accordingly
         if "The requested information is not available in the retrieved data. Please try another query or topic." in response_text:

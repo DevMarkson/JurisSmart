@@ -31,7 +31,7 @@ const Chat = () => {
       const {
         data: { response, citations },
       } = await axios.post(
-        "https://legal-advisor-6ru8.onrender.com/generate",
+        "https://jurissmart-backend-60a68e25334a.herokuapp.com/generate",
         requestData
       );
 
