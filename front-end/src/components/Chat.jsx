@@ -536,7 +536,6 @@ const Chat = () => {
               onKeyDown={handleKeyDown}
               placeholder="Ask a legal question..."
               rows={1}
-              disabled={isLoading}
               className="w-full max-h-32 px-4 py-3 bg-transparent text-white placeholder-slate-500 focus:outline-none resize-none scrollbar-hide disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <button
