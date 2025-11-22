@@ -62,8 +62,7 @@ const Chat = () => {
     setInputValue("");
     setCurrentIndex(newIndex);
     setIsResponseComplete(false);
-
-    const requestData = { prompt: promptToUse };
+    const requestData = { prompt: inputValue };
 
     try {
       const {
@@ -435,14 +434,8 @@ const Chat = () => {
                       <FiCpu className="text-gold-400" />
                     </div>
                     <div className="space-y-4 w-full">
-                      <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-6 prose-headings:font-bold prose-headings:text-gold-400 prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-ul:my-6 prose-ol:my-6 prose-li:my-2 prose-a:text-gold-400 hover:prose-a:text-gold-300 max-w-none">
-                        {!processedText ? (
-                          <div className="flex items-center gap-1 h-6">
-                            <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="w-2 h-2 bg-gold-500 rounded-full" />
-                            <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-2 h-2 bg-gold-500 rounded-full" />
-                            <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-2 h-2 bg-gold-500 rounded-full" />
-                          </div>
-                        ) : isCurrent && !isResponseComplete ? (
+                      <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-6 prose-headings:font-bold prose-headings:text-gold-400 prose-a:text-gold-400 hover:prose-a:text-gold-300 max-w-none">
+                        {isCurrent && !isResponseComplete ? (
                           <ReactTyped
                             strings={[convertMarkdownToHtml(processedText)]}
                             typeSpeed={5}
@@ -454,68 +447,60 @@ const Chat = () => {
                         )}
                       </div>
 
-                      {/* Citations - Only show when response is complete */}
-                      {showReferences && usedCitations.length > 0 && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="mt-6 pt-4 border-t border-slate-800"
-                        >
-                          <h4 className="text-sm font-semibold text-slate-400 mb-3">References</h4>
-                          <div className="grid gap-2">
-                            {usedCitations.map((citation, i) => (
-                              <a
-                                key={i}
-                                href={citation.pdf_link}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="flex items-start gap-3 p-3 rounded-lg bg-slate-900/50 border border-slate-800 hover:border-gold-500/30 hover:bg-slate-800/50 transition-all group"
-                              >
-                                <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 text-xs font-bold text-gold-400 bg-gold-500/10 rounded-full border border-gold-500/20">
-                                  {citation.newIndex}
-                                </span>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm text-slate-300 group-hover:text-white truncate transition-colors">
-                                    {citation.title}
-                                  </p>
-                                </div>
-                                <FiArrowRight className="text-slate-600 group-hover:text-gold-400 opacity-0 group-hover:opacity-100 transition-all" />
-                              </a>
-                            ))}
-                          </div>
-                        </motion.div>
-                      )}
+                        {/* Citations - Only show when response is complete */}
+                        {showReferences && usedCitations.length > 0 && (
+                          <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mt-6 pt-4 border-t border-slate-800"
+                          >
+                            <h4 className="text-sm font-semibold text-slate-400 mb-3">References</h4>
+                            <div className="grid gap-2">
+                              {usedCitations.map((citation, i) => (
+                                <a
+                                  key={i}
+                                  href={citation.pdf_link}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="flex items-start gap-3 p-3 rounded-lg bg-slate-900/50 border border-slate-800 hover:border-gold-500/30 hover:bg-slate-800/50 transition-all group"
+                                >
+                                  <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 text-xs font-bold text-gold-400 bg-gold-500/10 rounded-full border border-gold-500/20">
+                                    {citation.newIndex}
+                                  </span>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm text-slate-300 group-hover:text-white truncate transition-colors">
+                                      {citation.title}
+                                    </p>
+                                  </div>
+                                  <FiArrowRight className="text-slate-600 group-hover:text-gold-400 opacity-0 group-hover:opacity-100 transition-all" />
+                                </a>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
 
-                      {/* Feedback & Copy Buttons - Only show when response is complete */}
-                      {showReferences && processedText && (
+                      {/* Feedback Buttons - Only show when response is complete */}
+                      {showReferences && (
                         <div className="flex items-center gap-4 mt-4 pt-2">
                           <button
                             onClick={() => handleFeedback(index, 'good')}
                             className={clsx(
                               "flex items-center gap-2 text-sm transition-colors",
-                              currentVer.feedback === 'good' ? "text-green-400" : "text-slate-500 hover:text-green-400"
+                              entry.feedback === 'good' ? "text-green-400" : "text-slate-500 hover:text-green-400"
                             )}
                           >
-                            <FiThumbsUp className={clsx(currentVer.feedback === 'good' && "fill-current")} />
+                            <FiThumbsUp className={clsx(entry.feedback === 'good' && "fill-current")} />
                             <span>Helpful</span>
                           </button>
                           <button
                             onClick={() => handleFeedback(index, 'bad')}
                             className={clsx(
                               "flex items-center gap-2 text-sm transition-colors",
-                              currentVer.feedback === 'bad' ? "text-red-400" : "text-slate-500 hover:text-red-400"
+                              entry.feedback === 'bad' ? "text-red-400" : "text-slate-500 hover:text-red-400"
                             )}
                           >
-                            <FiThumbsDown className={clsx(currentVer.feedback === 'bad' && "fill-current")} />
+                            <FiThumbsDown className={clsx(entry.feedback === 'bad' && "fill-current")} />
                             <span>Not Helpful</span>
-                          </button>
-                          <div className="w-px h-4 bg-slate-700 mx-2" />
-                          <button
-                            onClick={() => handleCopy(processedText, `a-${index}`)}
-                            className="flex items-center gap-2 text-sm text-slate-500 hover:text-gold-400 transition-colors"
-                          >
-                            {copiedIndex === `a-${index}` ? <FiCheck className="text-green-400" /> : <FiCopy />}
-                            <span>Copy</span>
                           </button>
                         </div>
                       )}
