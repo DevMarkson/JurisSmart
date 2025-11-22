@@ -294,8 +294,8 @@ const Chat = () => {
             <GiInjustice className="relative text-7xl md:text-9xl text-slate-900 dark:text-white drop-shadow-2xl" />
           </div>
           
-          <div className="space-y-2 md:space-y-4 max-w-2xl px-4">
-            <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
+          <div className="space-y-2 md:space-y-4 max-w-2xl md:max-w-4xl lg:max-w-6xl px-4">
+            <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 md:whitespace-nowrap">
               Legal Clarity in Seconds
             </h1>
             <p className="text-base md:text-lg lg:text-xl text-slate-400 leading-relaxed">

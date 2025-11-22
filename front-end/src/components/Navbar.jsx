@@ -55,7 +55,10 @@ const Navbar = () => {
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/50">
         <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+          <h2 
+            onClick={() => window.location.reload()}
+            className="text-2xl font-bold tracking-tight text-white flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+          >
             JurisSmart
             <GiInjustice className="text-gold-400 text-3xl" />
           </h2>
