@@ -62,7 +62,7 @@ const Chat = () => {
     setInputValue("");
     setCurrentIndex(newIndex);
     setIsResponseComplete(false);
-    const requestData = { prompt: inputValue };
+    const requestData = { prompt: promptToUse };
 
     try {
       const {
@@ -435,7 +435,13 @@ const Chat = () => {
                     </div>
                     <div className="space-y-4 w-full">
                       <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-6 prose-headings:font-bold prose-headings:text-gold-400 prose-a:text-gold-400 hover:prose-a:text-gold-300 max-w-none">
-                        {isCurrent && !isResponseComplete ? (
+                        {!processedText ? (
+                          <div className="flex items-center gap-1 h-6">
+                            <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="w-2 h-2 bg-gold-500 rounded-full" />
+                            <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-2 h-2 bg-gold-500 rounded-full" />
+                            <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-2 h-2 bg-gold-500 rounded-full" />
+                          </div>
+                        ) : isCurrent && !isResponseComplete ? (
                           <ReactTyped
                             strings={[convertMarkdownToHtml(processedText)]}
                             typeSpeed={5}
@@ -480,7 +486,7 @@ const Chat = () => {
                         )}
 
                       {/* Feedback Buttons - Only show when response is complete */}
-                      {showReferences && (
+                      {showReferences && processedText && (
                         <div className="flex items-center gap-4 mt-4 pt-2">
                           <button
                             onClick={() => handleFeedback(index, 'good')}
