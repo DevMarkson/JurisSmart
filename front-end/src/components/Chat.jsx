@@ -545,14 +545,21 @@ const Chat = () => {
               onKeyDown={handleKeyDown}
               placeholder="Ask a legal question..."
               rows={1}
-              className="w-full max-h-32 px-4 py-3 bg-transparent text-white placeholder-slate-500 focus:outline-none resize-none scrollbar-hide"
+              disabled={isLoading}
+              className="w-full max-h-32 px-4 py-3 bg-transparent text-white placeholder-slate-500 focus:outline-none resize-none scrollbar-hide disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <button
               onClick={() => handleSubmit()}
-              disabled={!inputValue.trim()}
+              disabled={isLoading || !inputValue.trim()}
               className="p-3 bg-gold-500 text-slate-950 rounded-xl hover:bg-gold-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-gold-500/20"
             >
-              <FiSend className="text-xl" />
+              {isLoading ? (
+                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
+                  <FiRefreshCw className="text-xl" />
+                </motion.div>
+              ) : (
+                <FiSend className="text-xl" />
+              )}
             </button>
           </div>
         </div>
