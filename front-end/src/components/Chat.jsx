@@ -4,18 +4,24 @@ import axios from "axios";
 import { marked } from "marked";
 import { ReactTyped } from "react-typed";
 import { GiInjustice } from "react-icons/gi";
-import { FiSend, FiCpu, FiUser, FiRefreshCw, FiArrowRight, FiThumbsUp, FiThumbsDown } from "react-icons/fi";
+import { FiSend, FiCpu, FiUser, FiRefreshCw, FiArrowRight, FiThumbsUp, FiThumbsDown, FiCopy, FiEdit2, FiCheck, FiChevronLeft, FiChevronRight, FiX } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 
 const Chat = () => {
   const [inputValue, setInputValue] = useState("");
+  // History structure: [{ versions: [{ question, response, citations, feedback }], currentVersion: 0 }]
   const [history, setHistory] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(null);
   const [isResponseComplete, setIsResponseComplete] = useState(false);
+  const [copiedIndex, setCopiedIndex] = useState(null);
+  const [editingIndex, setEditingIndex] = useState(null); // Index of the message currently being edited
+  const [editValue, setEditValue] = useState(""); // Text content of the inline edit
+  
   const textareaRef = useRef(null);
+  const editTextareaRef = useRef(null);
   const responseContainerRef = useRef(null);
 
   // Handle tab visibility change to fix background generation issue
@@ -53,7 +59,10 @@ const Chat = () => {
 
       setHistory((prevHistory) => [
         ...prevHistory,
-        { question: inputValue, response, citations, feedback: null },
+        { 
+          versions: [{ question: inputValue, response, citations, feedback: null }],
+          currentVersion: 0
+        },
       ]);
 
       setInputValue("");
@@ -66,24 +75,103 @@ const Chat = () => {
     }
   }, [inputValue, history]);
 
+  const handleEditSubmit = async (index) => {
+    if (editValue.trim() === "") return;
+
+    setIsLoading(true);
+    setErrorMessage("");
+    setEditingIndex(null); // Exit edit mode
+    setIsResponseComplete(false);
+    setCurrentIndex(index); // Set as current for typing effect
+
+    const requestData = { prompt: editValue };
+
+    try {
+      const {
+        data: { response, citations },
+      } = await axios.post(
+        "https://jurissmart-backend-60a68e25334a.herokuapp.com/generate",
+        requestData
+      );
+
+      setHistory((prevHistory) => {
+        const newHistory = [...prevHistory];
+        const entry = newHistory[index];
+        
+        // Add new version
+        entry.versions.push({ 
+          question: editValue, 
+          response, 
+          citations, 
+          feedback: null 
+        });
+        
+        // Switch to new version
+        entry.currentVersion = entry.versions.length - 1;
+        
+        return newHistory;
+      });
+
+    } catch (error) {
+      console.log(error);
+      setErrorMessage("Something went wrong with the edit. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleFeedback = async (index, rating) => {
     const entry = history[index];
+    const currentVer = entry.versions[entry.currentVersion];
     
     // Optimistically update UI
     const newHistory = [...history];
-    newHistory[index].feedback = rating;
+    newHistory[index].versions[entry.currentVersion].feedback = rating;
     setHistory(newHistory);
 
     try {
       await axios.post("https://jurissmart-backend-60a68e25334a.herokuapp.com/feedback", {
-        prompt: entry.question,
-        response: entry.response,
+        prompt: currentVer.question,
+        response: currentVer.response,
         rating
       });
     } catch (error) {
       console.error("Error sending feedback:", error);
-      // Optionally revert UI on error, but for feedback it's usually fine to keep it
     }
+  };
+
+  const handleCopy = (text, id) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(id);
+    setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  const startEditing = (index, text) => {
+    setEditingIndex(index);
+    setEditValue(text);
+    // Focus will be handled by useEffect or autoFocus
+  };
+
+  const cancelEditing = () => {
+    setEditingIndex(null);
+    setEditValue("");
+  };
+
+  const switchVersion = (index, direction) => {
+    setHistory(prev => {
+      const newHistory = [...prev];
+      const entry = newHistory[index];
+      const newVersion = entry.currentVersion + direction;
+      
+      if (newVersion >= 0 && newVersion < entry.versions.length) {
+        entry.currentVersion = newVersion;
+        // If we switch versions, we don't want to re-type the response unless it was the one just generated
+        if (index === currentIndex) {
+           setIsResponseComplete(true);
+        }
+      }
+      return newHistory;
+    });
   };
 
   useEffect(() => {
@@ -94,10 +182,18 @@ const Chat = () => {
   }, [inputValue]);
 
   useEffect(() => {
+    if (editTextareaRef.current) {
+      editTextareaRef.current.style.height = "auto";
+      editTextareaRef.current.style.height = `${editTextareaRef.current.scrollHeight}px`;
+      editTextareaRef.current.focus();
+    }
+  }, [editingIndex]);
+
+  useEffect(() => {
     if (responseContainerRef.current) {
       responseContainerRef.current.scrollTop = responseContainerRef.current.scrollHeight;
     }
-  }, [history, isLoading, isResponseComplete]);
+  }, [history, isLoading, isResponseComplete, editingIndex]);
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
@@ -116,6 +212,13 @@ const Chat = () => {
     }
   };
 
+  const handleEditKeyDown = (e, index) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleEditSubmit(index);
+    }
+  };
+
   // Process response to replace [docN] with [N] and map citations uniquely
   const processResponse = (text, citations) => {
     if (!text) return { processedText: "", usedCitations: [] };
@@ -130,8 +233,6 @@ const Chat = () => {
     // First pass: Identify unique citations and assign numbers
     matches.forEach((match) => {
       const docId = parseInt(match[1]);
-      // Assuming citations are 0-indexed in the array, but docId is 1-based from backend logic usually.
-      // Let's stick to the previous assumption: citations array corresponds to doc1, doc2...
       const citation = citations[docId - 1]; 
       
       if (citation) {
@@ -214,10 +315,12 @@ const Chat = () => {
           className="flex-1 overflow-y-auto space-y-8 pr-2 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent"
         >
           {history.map((entry, index) => {
-             const { processedText, usedCitations } = processResponse(entry.response, entry.citations || []);
+             const currentVer = entry.versions[entry.currentVersion];
+             const { processedText, usedCitations } = processResponse(currentVer.response, currentVer.citations || []);
              const isCurrent = index === currentIndex;
              // Show references if it's a past message OR if it's current and typing is complete
              const showReferences = !isCurrent || isResponseComplete;
+             const isEditing = editingIndex === index;
 
              return (
               <motion.div 
@@ -227,12 +330,83 @@ const Chat = () => {
                 className="space-y-6"
               >
                 {/* User Question */}
-                <div className="flex justify-end">
-                  <div className="flex items-end gap-3 max-w-[80%]">
-                    <div className="bg-slate-800 text-white p-4 rounded-2xl rounded-br-sm shadow-lg border border-slate-700">
-                      <p className="text-base leading-relaxed">{entry.question}</p>
+                <div className="flex justify-end group">
+                  <div className="flex items-end gap-3 max-w-[80%] w-full justify-end">
+                    <div className="relative w-full flex flex-col items-end">
+                      
+                      {isEditing ? (
+                        <div className="w-full bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-lg">
+                          <textarea
+                            ref={editTextareaRef}
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            onKeyDown={(e) => handleEditKeyDown(e, index)}
+                            className="w-full bg-transparent text-white resize-none focus:outline-none scrollbar-hide"
+                            rows={1}
+                          />
+                          <div className="flex justify-end gap-2 mt-3">
+                            <button 
+                              onClick={cancelEditing}
+                              className="px-3 py-1 text-xs font-medium text-slate-400 hover:text-white bg-slate-700 rounded-md transition-colors"
+                            >
+                              Cancel
+                            </button>
+                            <button 
+                              onClick={() => handleEditSubmit(index)}
+                              className="px-3 py-1 text-xs font-medium text-slate-900 bg-gold-500 hover:bg-gold-400 rounded-md transition-colors"
+                            >
+                              Save & Submit
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="bg-slate-800 text-white p-4 rounded-2xl rounded-br-sm shadow-lg border border-slate-700">
+                            <p className="text-base leading-relaxed whitespace-pre-wrap">{currentVer.question}</p>
+                          </div>
+                          
+                          {/* Version Navigation */}
+                          {entry.versions.length > 1 && (
+                            <div className="absolute -bottom-6 left-0 flex items-center gap-2 text-xs text-slate-500 select-none">
+                              <button 
+                                onClick={() => switchVersion(index, -1)}
+                                disabled={entry.currentVersion === 0}
+                                className="hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                              >
+                                <FiChevronLeft size={14} />
+                              </button>
+                              <span>{entry.currentVersion + 1} / {entry.versions.length}</span>
+                              <button 
+                                onClick={() => switchVersion(index, 1)}
+                                disabled={entry.currentVersion === entry.versions.length - 1}
+                                className="hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                              >
+                                <FiChevronRight size={14} />
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Edit/Copy Actions for User */}
+                          <div className="absolute -left-20 top-1/2 -translate-y-1/2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                             <button 
+                               onClick={() => startEditing(index, currentVer.question)}
+                               className="p-2 text-slate-400 hover:text-gold-400 bg-slate-900/80 rounded-full backdrop-blur-sm border border-slate-700"
+                               title="Edit"
+                             >
+                               <FiEdit2 size={14} />
+                             </button>
+                             <button 
+                               onClick={() => handleCopy(currentVer.question, `q-${index}`)}
+                               className="p-2 text-slate-400 hover:text-gold-400 bg-slate-900/80 rounded-full backdrop-blur-sm border border-slate-700"
+                               title="Copy"
+                             >
+                               {copiedIndex === `q-${index}` ? <FiCheck size={14} className="text-green-400" /> : <FiCopy size={14} />}
+                             </button>
+                          </div>
+                        </>
+                      )}
                     </div>
-                    <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center shrink-0 mb-1">
                       <FiUser className="text-slate-300" />
                     </div>
                   </div>
@@ -245,7 +419,7 @@ const Chat = () => {
                       <FiCpu className="text-gold-400" />
                     </div>
                     <div className="space-y-4 w-full">
-                      <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-6 prose-headings:font-bold prose-headings:text-gold-400 prose-a:text-gold-400 hover:prose-a:text-gold-300 max-w-none">
+                      <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-6 prose-headings:font-bold prose-headings:text-gold-400 prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-ul:my-6 prose-ol:my-6 prose-li:my-2 prose-a:text-gold-400 hover:prose-a:text-gold-300 max-w-none">
                         {isCurrent && !isResponseComplete ? (
                           <ReactTyped
                             strings={[convertMarkdownToHtml(processedText)]}
@@ -290,28 +464,36 @@ const Chat = () => {
                         </motion.div>
                       )}
 
-                      {/* Feedback Buttons - Only show when response is complete */}
+                      {/* Feedback & Copy Buttons - Only show when response is complete */}
                       {showReferences && (
                         <div className="flex items-center gap-4 mt-4 pt-2">
                           <button
                             onClick={() => handleFeedback(index, 'good')}
                             className={clsx(
                               "flex items-center gap-2 text-sm transition-colors",
-                              entry.feedback === 'good' ? "text-green-400" : "text-slate-500 hover:text-green-400"
+                              currentVer.feedback === 'good' ? "text-green-400" : "text-slate-500 hover:text-green-400"
                             )}
                           >
-                            <FiThumbsUp className={clsx(entry.feedback === 'good' && "fill-current")} />
+                            <FiThumbsUp className={clsx(currentVer.feedback === 'good' && "fill-current")} />
                             <span>Helpful</span>
                           </button>
                           <button
                             onClick={() => handleFeedback(index, 'bad')}
                             className={clsx(
                               "flex items-center gap-2 text-sm transition-colors",
-                              entry.feedback === 'bad' ? "text-red-400" : "text-slate-500 hover:text-red-400"
+                              currentVer.feedback === 'bad' ? "text-red-400" : "text-slate-500 hover:text-red-400"
                             )}
                           >
-                            <FiThumbsDown className={clsx(entry.feedback === 'bad' && "fill-current")} />
+                            <FiThumbsDown className={clsx(currentVer.feedback === 'bad' && "fill-current")} />
                             <span>Not Helpful</span>
+                          </button>
+                          <div className="w-px h-4 bg-slate-700 mx-2" />
+                          <button
+                            onClick={() => handleCopy(processedText, `a-${index}`)}
+                            className="flex items-center gap-2 text-sm text-slate-500 hover:text-gold-400 transition-colors"
+                          >
+                            {copiedIndex === `a-${index}` ? <FiCheck className="text-green-400" /> : <FiCopy />}
+                            <span>Copy</span>
                           </button>
                         </div>
                       )}
