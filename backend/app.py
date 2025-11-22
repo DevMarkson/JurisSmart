@@ -169,6 +169,26 @@ def generate_response():
         return jsonify({'error': str(ex)})
 
 
+@app.route('/feedback', methods=['POST'])
+def handle_feedback():
+    try:
+        data = request.json
+        prompt = data.get('prompt')
+        response = data.get('response')
+        rating = data.get('rating')  # 'good' or 'bad'
+        
+        # Log the feedback (this will show up in Heroku logs)
+        print(f"FEEDBACK RECEIVED: Rating={rating}")
+        print(f"Prompt: {prompt}")
+        print(f"Response Preview: {response[:50]}...")
+        print("-" * 30)
+        
+        return jsonify({'status': 'success', 'message': 'Feedback received'})
+    except Exception as e:
+        print(f"Error processing feedback: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)

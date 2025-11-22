@@ -4,7 +4,7 @@ import axios from "axios";
 import { marked } from "marked";
 import { ReactTyped } from "react-typed";
 import { GiInjustice } from "react-icons/gi";
-import { FiSend, FiCpu, FiUser, FiRefreshCw, FiArrowRight } from "react-icons/fi";
+import { FiSend, FiCpu, FiUser, FiRefreshCw, FiArrowRight, FiThumbsUp, FiThumbsDown } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 
@@ -53,7 +53,7 @@ const Chat = () => {
 
       setHistory((prevHistory) => [
         ...prevHistory,
-        { question: inputValue, response, citations },
+        { question: inputValue, response, citations, feedback: null },
       ]);
 
       setInputValue("");
@@ -65,6 +65,26 @@ const Chat = () => {
       setIsLoading(false);
     }
   }, [inputValue, history]);
+
+  const handleFeedback = async (index, rating) => {
+    const entry = history[index];
+    
+    // Optimistically update UI
+    const newHistory = [...history];
+    newHistory[index].feedback = rating;
+    setHistory(newHistory);
+
+    try {
+      await axios.post("https://jurissmart-backend-60a68e25334a.herokuapp.com/feedback", {
+        prompt: entry.question,
+        response: entry.response,
+        rating
+      });
+    } catch (error) {
+      console.error("Error sending feedback:", error);
+      // Optionally revert UI on error, but for feedback it's usually fine to keep it
+    }
+  };
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -268,6 +288,32 @@ const Chat = () => {
                             ))}
                           </div>
                         </motion.div>
+                      )}
+
+                      {/* Feedback Buttons - Only show when response is complete */}
+                      {showReferences && (
+                        <div className="flex items-center gap-4 mt-4 pt-2">
+                          <button
+                            onClick={() => handleFeedback(index, 'good')}
+                            className={clsx(
+                              "flex items-center gap-2 text-sm transition-colors",
+                              entry.feedback === 'good' ? "text-green-400" : "text-slate-500 hover:text-green-400"
+                            )}
+                          >
+                            <FiThumbsUp className={clsx(entry.feedback === 'good' && "fill-current")} />
+                            <span>Helpful</span>
+                          </button>
+                          <button
+                            onClick={() => handleFeedback(index, 'bad')}
+                            className={clsx(
+                              "flex items-center gap-2 text-sm transition-colors",
+                              entry.feedback === 'bad' ? "text-red-400" : "text-slate-500 hover:text-red-400"
+                            )}
+                          >
+                            <FiThumbsDown className={clsx(entry.feedback === 'bad' && "fill-current")} />
+                            <span>Not Helpful</span>
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
