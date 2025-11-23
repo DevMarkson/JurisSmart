@@ -68,7 +68,7 @@ const Chat = () => {
       const {
         data: { response, citations },
       } = await axios.post(
-        "https://jurissmart-backend-60a68e25334a.herokuapp.com/generate",
+        "https://juris-smart.vercel.app/generate",
         requestData
       );
 
@@ -106,7 +106,7 @@ const Chat = () => {
       const {
         data: { response, citations },
       } = await axios.post(
-        "https://jurissmart-backend-60a68e25334a.herokuapp.com/generate",
+        "https://juris-smart.vercel.app/generate",
         requestData
       );
 
@@ -146,7 +146,7 @@ const Chat = () => {
     setHistory(newHistory);
 
     try {
-      await axios.post("https://jurissmart-backend-60a68e25334a.herokuapp.com/feedback", {
+      await axios.post("https://juris-smart.vercel.app/feedback", {
         prompt: currentVer.question,
         response: currentVer.response,
         rating
