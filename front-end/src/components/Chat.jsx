@@ -492,20 +492,20 @@ const Chat = () => {
                             onClick={() => handleFeedback(index, 'good')}
                             className={clsx(
                               "flex items-center gap-2 text-sm transition-colors",
-                              entry.feedback === 'good' ? "text-green-400" : "text-slate-500 hover:text-green-400"
+                              currentVer.feedback === 'good' ? "text-green-400" : "text-slate-500 hover:text-green-400"
                             )}
                           >
-                            <FiThumbsUp className={clsx(entry.feedback === 'good' && "fill-current")} />
+                            <FiThumbsUp className={clsx(currentVer.feedback === 'good' && "fill-current")} />
                             <span>Helpful</span>
                           </button>
                           <button
                             onClick={() => handleFeedback(index, 'bad')}
                             className={clsx(
                               "flex items-center gap-2 text-sm transition-colors",
-                              entry.feedback === 'bad' ? "text-red-400" : "text-slate-500 hover:text-red-400"
+                              currentVer.feedback === 'bad' ? "text-red-400" : "text-slate-500 hover:text-red-400"
                             )}
                           >
-                            <FiThumbsDown className={clsx(entry.feedback === 'bad' && "fill-current")} />
+                            <FiThumbsDown className={clsx(currentVer.feedback === 'bad' && "fill-current")} />
                             <span>Not Helpful</span>
                           </button>
                         </div>
